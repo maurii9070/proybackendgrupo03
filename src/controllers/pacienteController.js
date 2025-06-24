@@ -1,5 +1,6 @@
 // controlador para manejar un paciente
 import Paciente from '../models/Paciente.js';
+import bcrypt from 'bcryptjs';
 
 // funciones
 export const registrarPaciente = async (req, res) => {
@@ -17,10 +18,14 @@ export const registrarPaciente = async (req, res) => {
       return res.status(400).json({ error: 'El correo electrónico ya está registrado' });
     }
 
+    // Encriptar la contraseña
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
     // Crear nuevo paciente
     const nuevoPaciente = new Paciente({
       email,
-      password,
+      password: hashedPassword,
       nombre,
       apellido,
       telefono,
