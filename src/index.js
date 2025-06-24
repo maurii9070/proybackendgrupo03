@@ -4,6 +4,7 @@ import colors from 'colors'
 import { body, param } from 'express-validator'
 import { conexionDB } from './config/db.js'
 import { handleInputErrors } from './middlewares/validacionInputs.js'
+import pacienteRoutes from './routes/pacientes.js'
 
 dotenv.config()
 
@@ -18,7 +19,10 @@ const app = express()
 // Middleware para procesar datos JSON en las peticiones HTTP.
 app.use(express.json())
 
+app.use('/api/pacientes', pacienteRoutes);
+
 //Rutas de la API, prueba para express-validator
+/*
 app.get(
 	'/:id',
 	param('id').isMongoId().withMessage('El ID debe ser un ID de MongoDB válido'), // Para los parametros de la ruta
@@ -33,7 +37,7 @@ app.get(
 		res.send('API funcionando...')
 	}
 )
-
+*/
 const port = process.env.PORT || 4000
 
 app.listen(port, () => {
