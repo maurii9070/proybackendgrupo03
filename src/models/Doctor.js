@@ -1,6 +1,7 @@
 // modelo para doctor
 import mongoose from 'mongoose';
-import { act } from 'react';
+
+
 
 const DoctorSchema = new mongoose.Schema({
   email: {
@@ -57,7 +58,7 @@ const DoctorSchema = new mongoose.Schema({
     diaSemana: {
       type: String,
       required: true,
-      enum: ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo']
+      enum: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
     },
     horaInicio: {
       type: String, //usar string HH:MM
