@@ -4,16 +4,14 @@ const usuarioSchema = new mongoose.Schema(
 	{
 		dni: {
 			type: String,
-			required: [true, 'El DNI es obligatorio'],
+			//required: [true, 'El DNI es obligatorio'],
 			unique: true,
 			trim: true,
 		},
 		email: {
 			type: String,
-			unique: true,
 			trim: true,
 			lowercase: true,
-			match: [/^\S+@\S+\.\S+$/, 'Por favor, ingresa un correo electrónico válido'],
 		},
 		password: {
 			type: String,
