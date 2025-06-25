@@ -7,7 +7,11 @@ const EspecialidadSchema = new mongoose.Schema({
     required: [true, 'El nombre de la especialidad es obligatorio'],
     unique: true,
     trim: true
-  }
+  },
+  descripcion: {
+    type: String,
+    trim: true
+  },
 }, {
   timestamps: true
 });

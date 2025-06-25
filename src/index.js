@@ -5,6 +5,8 @@ import { body, param } from 'express-validator'
 import { conexionDB } from './config/db.js'
 import { handleInputErrors } from './middlewares/validacionInputs.js'
 import pacienteRoutes from './routes/pacientes.js'
+import doctorRoutes from './routes/doctores.js'
+import especialidadesRoutes from './routes/especialidades.js'
 
 dotenv.config()
 
@@ -20,6 +22,8 @@ const app = express()
 app.use(express.json())
 
 app.use('/api/pacientes', pacienteRoutes);
+app.use('/api/doctores', doctorRoutes);
+app.use('/api/especialidades', especialidadesRoutes);
 
 //Rutas de la API, prueba para express-validator
 /*
