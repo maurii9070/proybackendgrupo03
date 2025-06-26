@@ -9,6 +9,7 @@ import doctorRoutes from './routes/doctores.js'
 import especialidadesRoutes from './routes/especialidades.js'
 import administradorRoutes from './routes/administradores.js'
 import authRoutes from './routes/auth.js'
+import mercadoPagoRoutes from './routes/mercadoPagoRoute.js'
 
 dotenv.config()
 
@@ -28,6 +29,7 @@ app.use('/api/doctores', doctorRoutes);
 app.use('/api/especialidades', especialidadesRoutes);
 app.use('/api/administradores', administradorRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/mercadoPago', mercadoPagoRoutes);
 
 //Rutas de la API, prueba para express-validator
 /*
