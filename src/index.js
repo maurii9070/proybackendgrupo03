@@ -7,6 +7,8 @@ import { handleInputErrors } from './middlewares/validacionInputs.js'
 import pacienteRoutes from './routes/pacientes.js'
 import doctorRoutes from './routes/doctores.js'
 import especialidadesRoutes from './routes/especialidades.js'
+import administradorRoutes from './routes/administradores.js'
+import authRoutes from './routes/auth.js'
 
 dotenv.config()
 
@@ -24,6 +26,8 @@ app.use(express.json())
 app.use('/api/pacientes', pacienteRoutes);
 app.use('/api/doctores', doctorRoutes);
 app.use('/api/especialidades', especialidadesRoutes);
+app.use('/api/administradores', administradorRoutes);
+app.use('/api/auth', authRoutes);
 
 //Rutas de la API, prueba para express-validator
 /*
