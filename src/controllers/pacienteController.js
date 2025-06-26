@@ -5,6 +5,8 @@ import bcrypt from 'bcryptjs'
 // funciones
 export const registrarPaciente = async (req, res) => {
 	try {
+		// aca cambiamos para que el paciente se registre con dni y contraseña
+		// y no con email y contraseña como en el modelo base Usuario
 		const { dni, password, nombre, apellido, telefono, fechaNacimiento, email } = req.body
 
 		// Validación de campos obligatorios
@@ -12,6 +14,8 @@ export const registrarPaciente = async (req, res) => {
 		// if (!email || !password || !nombre || !apellido || !telefono) {
 		//   return res.status(400).json({ error: 'Todos los campos son obligatorios' });
 		// }
+
+		// 1- hay que verificar si el dni ya existe (ese es el identificador ahora, antes era el email)
 
 		// valido que el paciente no este registrado por dni
 		let paciente = await Paciente.findOne({ dni })
@@ -29,9 +33,10 @@ export const registrarPaciente = async (req, res) => {
 			password: hashedPassword,
 			nombre,
 			apellido,
+			rol: 'paciente', // Asignar rol de paciente, este es el rol que agregamos
 			telefono,
 			fechaNacimiento,
-			email,
+			email, //opcional, pero si se proporciona, debe ser válido
 		})
 
 		// Guardar paciente en la base de datos
