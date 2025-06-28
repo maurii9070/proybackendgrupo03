@@ -1,6 +1,7 @@
 import express from 'express'
 import dotenv from 'dotenv'
 import colors from 'colors'
+import cors from 'cors'
 import { body, param } from 'express-validator'
 import { conexionDB } from './config/db.js'
 import { handleInputErrors } from './middlewares/validacionInputs.js'
@@ -10,6 +11,7 @@ import especialidadesRoutes from './routes/especialidades.js'
 import administradorRoutes from './routes/administradores.js'
 import authRoutes from './routes/auth.js'
 import mercadoPagoRoutes from './routes/mercadoPagoRoute.js'
+import { corsConfig } from './config/cors.js'
 
 dotenv.config()
 
@@ -20,16 +22,16 @@ conexionDB()
 const app = express()
 
 // CORS
-
+app.use(cors(corsConfig))
 // Middleware para procesar datos JSON en las peticiones HTTP.
 app.use(express.json())
 
-app.use('/api/pacientes', pacienteRoutes);
-app.use('/api/doctores', doctorRoutes);
-app.use('/api/especialidades', especialidadesRoutes);
-app.use('/api/administradores', administradorRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/mercadoPago', mercadoPagoRoutes);
+app.use('/api/pacientes', pacienteRoutes)
+app.use('/api/doctores', doctorRoutes)
+app.use('/api/especialidades', especialidadesRoutes)
+app.use('/api/administradores', administradorRoutes)
+app.use('/api/auth', authRoutes)
+app.use('/api/mercadoPago', mercadoPagoRoutes)
 
 //Rutas de la API, prueba para express-validator
 /*
