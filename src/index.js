@@ -12,6 +12,7 @@ import administradorRoutes from './routes/administradores.js'
 import authRoutes from './routes/auth.js'
 import mercadoPagoRoutes from './routes/mercadoPagoRoute.js'
 import { corsConfig } from './config/cors.js'
+import turnoRoutes from './routes/turnoRoutes.js'
 
 dotenv.config()
 
@@ -32,7 +33,7 @@ app.use('/api/especialidades', especialidadesRoutes)
 app.use('/api/administradores', administradorRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/mercadoPago', mercadoPagoRoutes)
-
+app.use('/api/turnos', turnoRoutes)
 //Rutas de la API, prueba para express-validator
 /*
 app.get(
