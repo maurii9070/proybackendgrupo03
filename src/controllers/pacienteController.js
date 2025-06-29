@@ -65,3 +65,16 @@ export const getPacientes = async (req, res) => {
 		res.status(500).json({ error: 'Error interno del servidor' })
 	}
 }
+export const getPacienteById = async (req, res) => {
+	try {
+		const { idPaciente } = req.params
+		const paciente = await Paciente.findById(idPaciente).select('-password') // Excluir el campo de contraseña
+		if (!paciente) {
+			return res.status(404).json({ error: 'Paciente no encontrado' })
+		}
+		res.status(200).json(paciente)
+	} catch (error) {
+		console.error('Error al obtener paciente:', error.message)
+		res.status(500).json({ error: 'Error interno del servidor' })
+	}
+}
