@@ -13,6 +13,7 @@ import authRoutes from './routes/auth.js'
 import mercadoPagoRoutes from './routes/mercadoPagoRoute.js'
 import { corsConfig } from './config/cors.js'
 import turnoRoutes from './routes/turnoRoutes.js'
+import  {swaggerDocs}  from './config/swagger.js'
 
 dotenv.config()
 
@@ -26,7 +27,9 @@ const app = express()
 app.use(cors(corsConfig))
 // Middleware para procesar datos JSON en las peticiones HTTP.
 app.use(express.json())
-
+//ruta de swagger
+swaggerDocs(app);
+//rutas de la API
 app.use('/api/pacientes', pacienteRoutes)
 app.use('/api/doctores', doctorRoutes)
 app.use('/api/especialidades', especialidadesRoutes)
@@ -55,4 +58,5 @@ const port = process.env.PORT || 4000
 
 app.listen(port, () => {
 	console.log(colors.cyan.bold(`Servidor corriendo en el puerto: ${port}`))
+	console.log('Documentación Swagger en http://localhost:4000/api-docs');
 })
