@@ -11,6 +11,7 @@
 		"dev:api": "nodemon src/index.js --api"
 	},
 	"dependencies": {
+		"@scalar/express-api-reference": "^0.8.7",
 		"bcryptjs": "^3.0.2",
 		"colors": "^1.4.0",
 		"cors": "^2.8.5",
