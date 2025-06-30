@@ -8,7 +8,11 @@
 	"main": "index.js",
 	"scripts": {
 		"dev": "nodemon src/index.js",
-		"dev:api": "nodemon src/index.js --api"
+		"dev:api": "nodemon src/index.js --api",
+		"start": "node src/index.js" 
+	},
+	"engines": {
+		"node": "22.x"
 	},
 	"dependencies": {
 		"@scalar/express-api-reference": "^0.8.7",
