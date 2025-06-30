@@ -123,6 +123,8 @@ export const vincularDni = async (req, res) => {
 			nombre: name,
 			apellido: null,
 			password: null,
+			telefono: null,
+			fechaNacimiento: null,
 		})
 		await nuevoPaciente.save()
 

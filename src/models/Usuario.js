@@ -16,11 +16,10 @@ const usuarioSchema = new mongoose.Schema(
 			lowercase: true,
 			unique: true, // El email también debería ser único si lo vamos a usar con firebase + gmail
 			sparse: true, // Permite que haya documentos con email nulo sin violar unique
-			match: [/^\S+@\S+\.\S+$/, 'Por favor, introduce un email válido'] // Validación de formato de email, tambien se podria obligar a ingresar un mail de gmail
+			match: [/^\S+@\S+\.\S+$/, 'Por favor, introduce un email válido'], // Validación de formato de email, tambien se podria obligar a ingresar un mail de gmail
 		},
 		password: {
 			type: String,
-			required: [true, 'La contraseña es obligatoria'],
 			minlength: [6, 'La contraseña debe tener al menos 6 caracteres'],
 		},
 		nombre: {
@@ -30,7 +29,6 @@ const usuarioSchema = new mongoose.Schema(
 		},
 		apellido: {
 			type: String,
-			required: [true, 'El apellido es obligatorio'],
 			trim: true,
 		},
 		// Este campo lo añadimos para identificar el tipo de usuario cuando no hay login por email
@@ -39,8 +37,8 @@ const usuarioSchema = new mongoose.Schema(
 			type: String,
 			enum: ['paciente', 'doctor', 'admin'],
 			required: true, // El rol es esencial para la autorización
-			default: 'paciente' // Valor por defecto si no se especifica al crear
-		}
+			default: 'paciente', // Valor por defecto si no se especifica al crear
+		},
 	},
 	{
 		discriminatorKey: '_rol',
