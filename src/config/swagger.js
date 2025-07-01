@@ -13,6 +13,11 @@ const options = {
 		servers: [
 			//se puede agregar el servidor desplegado en producción
 			{
+				url: 'http://la-ruta-del-backend-en-render.com',
+				description: 'Servidor en producción (Render)',
+			},
+
+			{
 				url: 'http://localhost:4000', // Cambia esto según tu entorno
 				description: 'Servidor local',
 			},
