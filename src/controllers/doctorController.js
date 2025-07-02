@@ -128,4 +128,63 @@ export const eliminarDoctor = async (req, res) => {
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
+export const getDoctoresByName = async (req, res) => {
+  try {
+    const { nombre } = req.query;
+
+    if (!nombre) {
+      return res.status(400).json({ message: 'Debe proporcionar un nombre para buscar' });
+    }
+
+    // Buscar doctores por nombre usando regex para búsqueda parcial (like)
+    const doctores = await Doctor.find({
+      nombre: { $regex: nombre, $options: 'i' }, // 'i' para case-insensitive
+      activo: true // solo doctores activos
+    })
+      .select('-password')
+      .populate('especialidad', 'nombre');
+
+    if (doctores.length === 0) {
+      return res.status(200).json(doctores, { message: 'No se encontraron doctores con ese nombre' });
+    }
+
+    res.status(200).json(doctores);
+  } catch (error) {
+    console.error('Error al buscar doctores por nombre:', error.message);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+}
+export const getDoctoresByEspecialidad = async (req, res) => {
+  try {
+    const { idEspecialidad } = req.params;
+
+    if (!idEspecialidad) {
+      return res.status(400).json({ message: 'Debe proporcionar una especialidad para buscar' });
+    }
+
+    // Buscar primero la especialidad por ID
+    const especialidadEncontrada = await Especialidad.findById(idEspecialidad);
+
+    if (!especialidadEncontrada) {
+      return res.status(404).json({ message: 'No se encontró la especialidad' });
+    }
+
+    // Buscar doctores por el ID de la especialidad
+    const doctores = await Doctor.find({
+      especialidad: especialidadEncontrada._id,
+      activo: true // solo doctores activos
+    })
+      .select('-password')
+      .populate('especialidad', 'nombre');
+
+    if (doctores.length === 0) {
+      return res.status(200).json({ doctores: [], message: 'No se encontraron doctores con esa especialidad' });
+    }
+
+    res.status(200).json(doctores);
+  } catch (error) {
+    console.error('Error al buscar doctores por especialidad:', error.message);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+}
 
