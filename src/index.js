@@ -10,6 +10,7 @@ import administradorRoutes from './routes/administradores.js'
 import authRoutes from './routes/auth.js'
 import mercadoPagoRoutes from './routes/mercadoPagoRoute.js'
 import { corsConfig } from './config/cors.js'
+import morgan from 'morgan'
 import turnoRoutes from './routes/turnoRoutes.js'
 import archivoRoutes from './routes/archivoRoutes.js'
 import { swaggerDocs } from './config/swagger.js'
@@ -26,6 +27,9 @@ const app = express()
 app.use(cors(corsConfig))
 // Middleware para procesar datos JSON en las peticiones HTTP.
 app.use(express.json())
+
+app.use(morgan('dev'))
+
 //ruta de swagger
 swaggerDocs(app)
 //rutas de la API
@@ -37,23 +41,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/mercadoPago', mercadoPagoRoutes)
 app.use('/api/turnos', turnoRoutes)
 app.use('/api/archivos', archivoRoutes)
-//Rutas de la API, prueba para express-validator
-/*
-app.get(
-	'/:id',
-	param('id').isMongoId().withMessage('El ID debe ser un ID de MongoDB válido'), // Para los parametros de la ruta
-	body('nombre') // Para los datos del cuerpo de la petición
-		.trim()
-		.notEmpty()
-		.withMessage('El nombre es obligatorio')
-		.isLength({ min: 2, max: 10 })
-		.withMessage('El nombre debe tener entre 2 y 10 caracteres'),
-	handleInputErrors, // Middleware para manejar errores de validación (Muestra un arreglo de errores)
-	(req, res) => {
-		res.send('API funcionando...')
-	}
-)
-*/
+
 const port = process.env.PORT || 4000
 
 app.listen(port, () => {

@@ -1,19 +1,27 @@
-import express from 'express';
-import turnoController from '../controllers/turnoController.js';
+import express from 'express'
+import turnoController from '../controllers/turnoController.js'
 
-const router = express.Router();
+const router = express.Router()
 // Rutas para Turnos
-// Crear un turno 
-router.post('/paciente/:idPaciente/doctor/:idDoctor', turnoController.createTurno);
+// Crear un turno
+router.post('/paciente/:idPaciente/doctor/:idDoctor', turnoController.createTurno)
 // Obtener turnos por paciente y doctor
-router.get('/paciente/:idPaciente', turnoController.getTurnosByPaciente);
-router.get('/doctor/:idDoctor', turnoController.getTurnosByDoctor);
+router.get('/paciente/:idPaciente', turnoController.getTurnosByPaciente)
+router.get('/doctor/:idDoctor', turnoController.getTurnosByDoctor)
+// Obtener todos los turnos
+router.get('/', turnoController.getAllTurnos)
 // Obtener un turno por ID
-router.get('/:idTurno', turnoController.getTurnoById);
+router.get('/:idTurno', turnoController.getTurnoById)
+// Obtener turnos fecha
+router.get('/fecha', turnoController.getTurnosByFecha)
+// Obtener todos los turnos de un doctor por fecha
+router.get('/doctor/:idDoctor/fecha', turnoController.getTurnosByDoctorAndFecha)
+// Obtener turnos por estado pendiente
+router.get('/estado/pendiente', turnoController.getTurnosPendientes)
 // Actualizar un turno (actualiza solo observaciones)
-router.put('/:idTurno', turnoController.updateTurno);
+router.put('/:idTurno', turnoController.updateTurno)
 // Cancelar un turno cambia estado a "cancelado"
-router.put('/:idTurno/cancelado', turnoController.cancelarTurno);
+router.put('/:idTurno/cancelado', turnoController.cancelarTurno)
 // Marcar un turno como realizado cambia estado a "realizado"
-router.put('/:idTurno/realizado', turnoController.successTurno);
-export default router;
+router.put('/:idTurno/realizado', turnoController.successTurno)
+export default router
