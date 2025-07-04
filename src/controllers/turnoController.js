@@ -42,7 +42,7 @@ const getTurnosByPaciente = async (req, res) => {
 			populate: {
 				path: 'especialidad',
 			},
-		})
+		}).populate('paciente')
 		res.json(turnos)
 	} catch (error) {
 		console.error(error)
@@ -155,15 +155,25 @@ const getAllTurnos = async (req, res) => {
 }
 
 const getTurnosByFecha = async (req, res) => {
-	try {
-		const { fecha } = req.query
-		const turnos = await Turno.find({ fecha }).populate('paciente').populate('doctor')
-		res.json(turnos)
-	} catch (error) {
-		console.error(error)
-		res.status(500).json({ error: 'Error al obtener los turnos por fecha' })
-	}
-}
+    try {
+		
+        const { fecha } = req.query; // Asegúrate que estás usando req.query
+        console.log('Fecha recibida:', fecha, typeof fecha); // Para depuración
+        if (!fecha) {
+            return res.status(400).json({ error: 'La fecha es requerida' });
+        }
+console.log('Fecha recibida:', fecha, typeof fecha); // Para depuración
+        // Busca directamente por el campo fecha (asegúrate que existe en tu schema)
+        const turnos = await Turno.find({ fecha: fecha.toString() })
+            .populate('paciente', '-password')
+            .populate('doctor', '-password');
+
+        res.json(turnos);
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Error al buscar turnos por fecha' });
+    }
+};
 
 const getTurnosPendientes = async (req, res) => {
 	try {
@@ -174,6 +184,25 @@ const getTurnosPendientes = async (req, res) => {
 		res.status(500).json({ error: 'Error al obtener los turnos pendientes' })
 	}
 }
+const confirmarTurno = async (req, res) => {
+	try {
+		const { idTurno } = req.params
+		const turno = await Turno.findById(idTurno)
+		if (!turno) {
+			return res.status(404).json({ error: 'Turno no encontrado' })
+		}
+
+		// Marcar el turno como confirmado
+		turno.estado = 'confirmado'
+		await turno.save()
+		res.json({ message: 'Turno confirmado exitosamente' })
+	} catch (error) {
+		console.error(error)
+		res.status(500).json({ error: 'Error al confirmar el turno' })
+	}
+}
+
+
 
 export default {
 	createTurno,
@@ -187,4 +216,5 @@ export default {
 	getAllTurnos,
 	getTurnosByFecha,
 	getTurnosPendientes,
+	confirmarTurno,
 }

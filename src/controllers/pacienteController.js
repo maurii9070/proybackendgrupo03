@@ -78,3 +78,29 @@ export const getPacienteById = async (req, res) => {
 		res.status(500).json({ error: 'Error interno del servidor' })
 	}
 }
+export const getPacienteByDni = async (req, res) => {
+    try {
+        const { dni } = req.params;
+        
+        // Limpiar y normalizar el DNI
+        const dniNormalizado = dni.trim();
+        
+        const paciente = await Paciente.findOne({ 
+            dni: dniNormalizado 
+        }).select('-password');
+        
+        if (!paciente) {
+            // Para depuración: verificar qué DNI se está buscando
+            console.log(`Buscando paciente con DNI: "${dniNormalizado}"`);
+            return res.status(404).json({ 
+                error: 'Paciente no encontrado',
+                dniBuscado: dniNormalizado // Para ayudar en la depuración
+            });
+        }
+        
+        res.status(200).json(paciente);
+    } catch (error) {
+        console.error('Error al obtener paciente por DNI:', error.message);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+}
