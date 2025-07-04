@@ -198,4 +198,21 @@ export const getDoctoresByEspecialidad = async (req, res) => {
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 }
+export const getDoctorById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Buscar el doctor por ID
+    const doctor = await Doctor.findById(id).select('-password').populate('especialidad', 'nombre');
+
+    if (!doctor) {
+      return res.status(404).json({ message: 'Doctor no encontrado' });
+    }
+
+    res.status(200).json(doctor);
+  } catch (error) {
+    console.error('Error al obtener el doctor por ID:', error.message);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+} 
 
