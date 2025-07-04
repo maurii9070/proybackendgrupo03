@@ -6,16 +6,24 @@ import bcrypt from 'bcryptjs';
 //registrar un nuevo doctor
 export const registrarDoctor = async (req, res) => {
   try {
-    const { email, password, nombre, apellido, especialidadId, precioConsulta, telefono, disponibilidad } = req.body;
+    const { dni, email, password, nombre, apellido, matricula, especialidad, precioConsulta, telefono } = req.body;
 
-    // Verificar si el doctor ya existe
-    const doctorExistente = await Doctor.findOne({ email });
+    // Verificar si el doctor ya existe por email o DNI
+    const doctorExistente = await Doctor.findOne({ 
+      $or: [{ email }, { dni }] 
+    });
     if (doctorExistente) {
-      return res.status(400).json({ message: 'El doctor ya está registrado' });
+      return res.status(400).json({ message: 'El doctor ya está registrado con ese email o DNI' });
+    }
+
+    // Verificar si la matrícula ya existe
+    const matriculaExistente = await Doctor.findOne({ matricula });
+    if (matriculaExistente) {
+      return res.status(400).json({ message: 'La matrícula ya está registrada' });
     }
 
     // Verificar si la especialidad existe
-    const especialidadExistente = await Especialidad.findById(especialidadId);
+    const especialidadExistente = await Especialidad.findById(especialidad);
     if (!especialidadExistente) {
       return res.status(400).json({ message: 'La especialidad no existe' });
     }
@@ -26,14 +34,17 @@ export const registrarDoctor = async (req, res) => {
 
     // Crear el nuevo doctor
     const nuevoDoctor = new Doctor({
+      dni,
       email,
       password: passwordEncriptada,
       nombre,
       apellido,
-      especialidad: especialidadId, //se guarda la referecian al objectId de especialidad
+      rol: 'doctor', // Establecer el rol explícitamente
+      matricula,
+      especialidad, // se guarda la referencia al objectId de especialidad
       precioConsulta,
       telefono,
-      disponibilidad: disponibilidad || [], // si no se proporciona, se inicializa como un arreglo vacío
+      activo: true // Establecer como activo por defecto
     });
 
     // Guardar el doctor en la base de datos
