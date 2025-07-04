@@ -10,10 +10,11 @@ router.get('/paciente/:idPaciente', turnoController.getTurnosByPaciente)
 router.get('/doctor/:idDoctor', turnoController.getTurnosByDoctor)
 // Obtener todos los turnos
 router.get('/', turnoController.getAllTurnos)
-// Obtener un turno por ID
-router.get('/:idTurno', turnoController.getTurnoById)
 // Obtener turnos fecha
 router.get('/fecha', turnoController.getTurnosByFecha)
+// Obtener un turno por ID
+router.get('/:idTurno', turnoController.getTurnoById)
+
 // Obtener todos los turnos de un doctor por fecha
 router.get('/doctor/:idDoctor/fecha', turnoController.getTurnosByDoctorAndFecha)
 // Obtener turnos por estado pendiente
@@ -24,4 +25,6 @@ router.put('/:idTurno', turnoController.updateTurno)
 router.put('/:idTurno/cancelado', turnoController.cancelarTurno)
 // Marcar un turno como realizado cambia estado a "realizado"
 router.put('/:idTurno/realizado', turnoController.successTurno)
+// Confirmar un turno cambia estado a "confirmado"
+router.put('/:idTurno/confirmado', turnoController.confirmarTurno)
 export default router
