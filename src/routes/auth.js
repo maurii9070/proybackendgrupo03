@@ -1,6 +1,12 @@
 import express from 'express'
 const router = express.Router()
-import { loginConDni, loginConFirebase, obtenerPerfilUsuario, vincularDni } from '../controllers/authController.js'
+import {
+	loginConDni,
+	loginConFirebase,
+	obtenerPerfilUsuario,
+	resetPassword,
+	vincularDni,
+} from '../controllers/authController.js'
 import { protegerRuta } from '../middlewares/authMiddleware.js'
 
 /**
@@ -24,5 +30,7 @@ router.get('/me', protegerRuta, obtenerPerfilUsuario)
 router.post('/login/firebase', loginConFirebase)
 // vincular DNI al usuario autenticado con Firebase
 router.post('/vincular-dni', vincularDni)
+// Ruta para resetear la contraseña del usuario un usuario
+router.post('/reset-password', resetPassword)
 
 export default router

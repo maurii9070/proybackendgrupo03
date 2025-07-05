@@ -135,3 +135,21 @@ export const vincularDni = async (req, res) => {
 		res.status(500).json({ msg: 'Error interno del servidor' })
 	}
 }
+
+export const resetPassword = async (req, res) => {
+	const { dni, newPassword } = req.body
+
+	// Comprobar si existe el usuario
+	const usuario = await Usuario.findOne({ dni })
+	if (!usuario) {
+		return res.status(404).json({ msg: 'Usuario no encontrado' })
+	}
+
+	// Encriptar la contraseña
+	const salt = await bcrypt.genSalt(10)
+	const hashedPassword = await bcrypt.hash(newPassword, salt)
+	usuario.password = hashedPassword
+	await usuario.save()
+
+	res.status(200).json({ msg: 'Contraseña restablecida con éxito' })
+}
