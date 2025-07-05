@@ -9,7 +9,7 @@ import especialidadesRoutes from './routes/especialidades.js'
 import administradorRoutes from './routes/administradores.js'
 import authRoutes from './routes/auth.js'
 import mercadoPagoRoutes from './routes/mercadoPagoRoute.js'
-import { corsConfig } from './config/cors.js'
+import { corsConfig, corsWebhookConfig } from './config/cors.js'
 import morgan from 'morgan'
 import turnoRoutes from './routes/turnoRoutes.js'
 import archivoRoutes from './routes/archivoRoutes.js'
@@ -25,8 +25,7 @@ conexionDB()
 // instanciar express
 const app = express()
 
-// CORS
-app.use(cors(corsConfig))
+
 // Middleware para procesar datos JSON en las peticiones HTTP.
 app.use(express.json())
 
@@ -35,12 +34,15 @@ app.use(morgan('dev'))
 //ruta de swagger
 swaggerDocs(app)
 //rutas de la API
+
+app.use('/api/mercadoPago',cors(corsWebhookConfig), mercadoPagoRoutes)
+// CORS
+app.use(cors(corsConfig))
 app.use('/api/pacientes', pacienteRoutes)
 app.use('/api/doctores', doctorRoutes)
 app.use('/api/especialidades', especialidadesRoutes)
 app.use('/api/administradores', administradorRoutes)
 app.use('/api/auth', authRoutes)
-app.use('/api/mercadoPago', mercadoPagoRoutes)
 app.use('/api/turnos', turnoRoutes)
 app.use('/api/archivos', archivoRoutes)
 app.use('/api/estadisticas', estadisticasRoutes)
