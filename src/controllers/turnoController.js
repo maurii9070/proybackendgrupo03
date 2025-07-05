@@ -203,6 +203,7 @@ const confirmarTurno = async (req, res) => {
 
 		// Marcar el turno como confirmado
 		turno.estado = 'confirmado'
+		turno.expireAt = null // Eliminar la expiración del turno
 		await turno.save()
 		res.json({ message: 'Turno confirmado exitosamente' })
 	} catch (error) {
