@@ -24,6 +24,9 @@ const pagoSchema = new mongoose.Schema({
 		enum: ['pendiente', 'completado', 'cancelado'],
 		default: 'pendiente',
 	},
+	paymentIdMp: {
+		type: String,
+	}
 })
 
 const Pago = mongoose.model('Pago', pagoSchema)
