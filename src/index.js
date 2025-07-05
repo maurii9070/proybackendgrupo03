@@ -14,6 +14,7 @@ import morgan from 'morgan'
 import turnoRoutes from './routes/turnoRoutes.js'
 import archivoRoutes from './routes/archivoRoutes.js'
 import estadisticasRoutes from './routes/estadisticasRoutes.js'
+import pagosRoutes from './routes/pagosRoutes.js'
 import { swaggerDocs } from './config/swagger.js'
 
 dotenv.config()
@@ -43,6 +44,7 @@ app.use('/api/mercadoPago', mercadoPagoRoutes)
 app.use('/api/turnos', turnoRoutes)
 app.use('/api/archivos', archivoRoutes)
 app.use('/api/estadisticas', estadisticasRoutes)
+app.use('/api/pagos', pagosRoutes)
 
 const port = process.env.PORT || 4000
 
