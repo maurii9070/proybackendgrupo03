@@ -1,6 +1,8 @@
 export const corsConfig = {
 	origin: function (origin, callback) {
-		const whiteList = [process.env.FRONTEND_URL]
+		const whiteList = [process.env.FRONTEND_URL,'https://www.mercadopago.com.ar','https://sandbox.mercadopago.com.ar'
+			
+		]
 
 		if (process.argv[2] === '--api') {
 			whiteList.push(undefined)
@@ -12,4 +14,22 @@ export const corsConfig = {
 			callback(new Error('Error de CORS'))
 		}
 	},
+}
+// Configuración especial solo para webhook
+export const corsWebhookConfig = {
+    origin: function (origin, callback) {
+        const whiteList = [
+            process.env.FRONTEND_URL,
+            'https://www.mercadopago.com.ar',
+            'https://sandbox.mercadopago.com.ar',
+            undefined // solo aquí permitimos undefined
+        ]
+
+        if (whiteList.includes(origin)) {
+            callback(null, true)
+        } else {
+            callback(new Error('Error de CORS'))
+        }
+    },
+    methods: ['POST']
 }

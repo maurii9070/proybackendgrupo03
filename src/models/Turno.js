@@ -5,6 +5,7 @@ const turnoSchema = new mongoose.Schema({
 		type: String, // String debe ser dia/mes/año - 1/1/2025 o 21/10/2025
 		trim: true,
 		required: [true, 'La fecha del turno es obligatoria'],
+		
 	},
 	hora: {
 		type: String,
@@ -36,6 +37,11 @@ const turnoSchema = new mongoose.Schema({
 			ref: 'Archivo',
 		},
 	],
+	expireAt:{
+		type: Date,
+		default: Date.now,
+		expires: 86400, // 24 horas en segundos (24 * 60 * 60)
+	},
 })
 const Turno = mongoose.model('Turno', turnoSchema)
 export default Turno
