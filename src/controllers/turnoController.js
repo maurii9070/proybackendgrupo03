@@ -37,12 +37,14 @@ const createTurno = async (req, res) => {
 const getTurnosByPaciente = async (req, res) => {
 	try {
 		const { idPaciente } = req.params
-		const turnos = await Turno.find({ paciente: idPaciente }).populate({
-			path: 'doctor',
-			populate: {
-				path: 'especialidad',
-			},
-		}).populate('paciente')
+		const turnos = await Turno.find({ paciente: idPaciente })
+			.populate({
+				path: 'doctor',
+				populate: {
+					path: 'especialidad',
+				},
+			})
+			.populate('paciente')
 		res.json(turnos)
 	} catch (error) {
 		console.error(error)
@@ -52,7 +54,15 @@ const getTurnosByPaciente = async (req, res) => {
 const getTurnosByDoctor = async (req, res) => {
 	try {
 		const { idDoctor } = req.params
-		const turnos = await Turno.find({ doctor: idDoctor }).populate('paciente')
+		const turnos = await Turno.find({ doctor: idDoctor })
+			.populate('paciente')
+			.populate({
+				path: 'doctor',
+				populate: {
+					path: 'especialidad',
+				},
+			})
+			.populate('archivos')
 		res.json(turnos)
 	} catch (error) {
 		console.error(error)
@@ -155,25 +165,24 @@ const getAllTurnos = async (req, res) => {
 }
 
 const getTurnosByFecha = async (req, res) => {
-    try {
-		
-        const { fecha } = req.query; // Asegúrate que estás usando req.query
-        console.log('Fecha recibida:', fecha, typeof fecha); // Para depuración
-        if (!fecha) {
-            return res.status(400).json({ error: 'La fecha es requerida' });
-        }
-console.log('Fecha recibida:', fecha, typeof fecha); // Para depuración
-        // Busca directamente por el campo fecha (asegúrate que existe en tu schema)
-        const turnos = await Turno.find({ fecha: fecha.toString() })
-            .populate('paciente', '-password')
-            .populate('doctor', '-password');
+	try {
+		const { fecha } = req.query // Asegúrate que estás usando req.query
+		console.log('Fecha recibida:', fecha, typeof fecha) // Para depuración
+		if (!fecha) {
+			return res.status(400).json({ error: 'La fecha es requerida' })
+		}
+		console.log('Fecha recibida:', fecha, typeof fecha) // Para depuración
+		// Busca directamente por el campo fecha (asegúrate que existe en tu schema)
+		const turnos = await Turno.find({ fecha: fecha.toString() })
+			.populate('paciente', '-password')
+			.populate('doctor', '-password')
 
-        res.json(turnos);
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ error: 'Error al buscar turnos por fecha' });
-    }
-};
+		res.json(turnos)
+	} catch (error) {
+		console.error('Error:', error)
+		res.status(500).json({ error: 'Error al buscar turnos por fecha' })
+	}
+}
 
 const getTurnosPendientes = async (req, res) => {
 	try {
@@ -201,8 +210,6 @@ const confirmarTurno = async (req, res) => {
 		res.status(500).json({ error: 'Error al confirmar el turno' })
 	}
 }
-
-
 
 export default {
 	createTurno,
