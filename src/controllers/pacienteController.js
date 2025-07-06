@@ -23,9 +23,20 @@ export const registrarPaciente = async (req, res) => {
 			return res.status(400).json({ error: 'El DNI ya está registrado' })
 		}
 
+		// Si se proporciona un email, verificar que no esté ya registrado
+		if (email && email.trim() !== '') {
+			const pacienteConEmail = await Paciente.findOne({ email: email.trim() })
+			if (pacienteConEmail) {
+				return res.status(400).json({ error: 'El email ya está registrado' })
+			}
+		}
+
 		// Encriptar la contraseña
 		const salt = await bcrypt.genSalt(10)
 		const hashedPassword = await bcrypt.hash(password, salt)
+
+		// Normalizar el email: convertir string vacío a null para que funcione con sparse index
+		const emailNormalizado = email && email.trim() !== '' ? email.trim() : null
 
 		// Crear nuevo paciente
 		const nuevoPaciente = new Paciente({
@@ -35,7 +46,7 @@ export const registrarPaciente = async (req, res) => {
 			apellido,
 			telefono,
 			fechaNacimiento,
-			email, //opcional, pero si se proporciona, debe ser válido
+			email: emailNormalizado, //opcional, pero si se proporciona, debe ser válido
 		})
 
 		// Guardar paciente en la base de datos
