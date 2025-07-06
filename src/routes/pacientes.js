@@ -1,7 +1,7 @@
 //rutas para el modelo paciente
 import express from 'express'
 const router = express.Router()
-import { registrarPaciente, getPacientes, getPacienteById } from '../controllers/pacienteController.js'
+import { registrarPaciente, getPacientes, getPacienteById, getPacienteByDni } from '../controllers/pacienteController.js'
 import { protegerRuta, autorizarRoles } from '../middlewares/authMiddleware.js'
 import { body } from 'express-validator'
 import { handleInputErrors } from '../middlewares/validacionInputs.js'
@@ -74,6 +74,7 @@ router.get('/', protegerRuta, autorizarRoles('admin'), getPacientes)
 
 // estas rutas ya estan validadas con token JWT y protegidas por middlewares y funcionan
 
+router.get('/dni/:dni', getPacienteByDni)
 // faltan agregar las rutas para actualizar y eliminar pacientes
 router.get('/:idPaciente', getPacienteById)
 
