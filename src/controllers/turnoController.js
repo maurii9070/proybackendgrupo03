@@ -45,6 +45,7 @@ const getTurnosByPaciente = async (req, res) => {
 				},
 			})
 			.populate('paciente')
+		turnos.reverse()
 		res.json(turnos)
 	} catch (error) {
 		console.error(error)
@@ -192,7 +193,12 @@ const getTurnosByFecha = async (req, res) => {
 
 const getTurnosPendientes = async (req, res) => {
 	try {
-		const turnos = await Turno.find({ estado: 'pendiente' }).populate('paciente').populate('doctor')
+		const turnos = await Turno.find({ estado: 'pendiente' })
+			.populate('paciente')
+			.populate('doctor')
+			.populate('archivos')
+		
+		turnos.reverse()
 		res.json(turnos)
 	} catch (error) {
 		console.error(error)
