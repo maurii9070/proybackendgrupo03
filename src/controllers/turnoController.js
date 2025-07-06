@@ -146,7 +146,11 @@ const getTurnosByDoctorAndFecha = async (req, res) => {
 	try {
 		const { idDoctor } = req.params
 		const { fecha } = req.query
-		const turnos = await Turno.find({ doctor: idDoctor, fecha })
+		const turnos = await Turno.find({
+			doctor: idDoctor,
+			fecha,
+			estado: { $in: ['pendiente', 'confirmado'] },
+		})
 		res.json(turnos)
 	} catch (error) {
 		console.error(error)
