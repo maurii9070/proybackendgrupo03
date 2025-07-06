@@ -229,7 +229,12 @@ const getTurnosByEstadoAndPacienteId = async (req,res) => {
 			const { idPaciente,estado } = req.params
 			const turnos = await Turno.find({ paciente: idPaciente, estado })
 				.populate('paciente')
-				.populate('doctor')
+				.populate({
+				path: 'doctor',
+				populate: {
+					path: 'especialidad',
+				},
+			})
 			res.json(turnos)
 		} catch (error) {
 			console.error(error)
