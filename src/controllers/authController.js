@@ -104,18 +104,29 @@ export const vincularDni = async (req, res) => {
 	try {
 		const { user_id, dni, email, name } = req.body
 
-		const paciente = await Paciente.findOne({ dni })
+		// Primero verificar si el DNI existe en el modelo base Usuario
+		const usuarioExistente = await Usuario.findOne({ dni })
 
-		if (paciente) {
-			// Si ya existe vinculamos el usuario de Firebase al paciente
-			paciente.uid_firebase = user_id
-			paciente.email = email
-			await paciente.save()
-			const token = generarJWT(paciente._id, paciente._rol || paciente.rol)
-			return res.status(200).json({ token })
+		if (usuarioExistente) {
+			// Si existe, verificar si es un paciente
+			const paciente = await Paciente.findOne({ dni })
+
+			if (paciente) {
+				// Es un paciente, vincular Firebase
+				paciente.uid_firebase = user_id
+				paciente.email = email
+				await paciente.save()
+				const token = generarJWT(paciente._id, paciente._rol || paciente.rol)
+				return res.status(200).json({ token })
+			} else {
+				// Es un doctor o administrador
+				return res.status(403).json({
+					msg: 'Solo los pacientes pueden iniciar sesión con Google. Los doctores y administradores deben usar el login con DNI y contraseña.',
+				})
+			}
 		}
 
-		// Si no existe, creamos un nuevo paciente
+		// Si no existe ningún usuario con ese DNI, crear un nuevo paciente
 		const nuevoPaciente = new Paciente({
 			dni,
 			uid_firebase: user_id,

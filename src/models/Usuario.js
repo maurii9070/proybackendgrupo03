@@ -31,14 +31,6 @@ const usuarioSchema = new mongoose.Schema(
 			type: String,
 			trim: true,
 		},
-		// Este campo lo añadimos para identificar el tipo de usuario cuando no hay login por email
-		// Es redundante con _rol, pero puede ser útil si quieres un campo explícito para "rol"
-		rol: {
-			type: String,
-			enum: ['paciente', 'doctor', 'admin'],
-			required: true, // El rol es esencial para la autorización
-			default: 'paciente', // Valor por defecto si no se especifica al crear
-		},
 	},
 	{
 		discriminatorKey: '_rol',
