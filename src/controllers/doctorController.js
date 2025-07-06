@@ -76,7 +76,7 @@ export const getDoctores = async (req, res) => {
 	}
 }
 
-// actualizar informacion de un doctor (actualiza solo telefono, precioConsulta y disponibilidad)
+// actualizar informacion de un doctor (actualiza email, telefono, precioConsulta y disponibilidad)
 export const actualizarDoctor = async (req, res) => {
 	try {
 		const { id } = req.params
@@ -88,7 +88,16 @@ export const actualizarDoctor = async (req, res) => {
 			return res.status(404).json({ message: 'Doctor no encontrado' })
 		}
 
-		// Actualizar los datos del doctor (solo campos telefono, precioConsulta y disponibilidad)
+		// Si se está actualizando el email, verificar que no esté duplicado
+		if (email && email !== doctorExistente.email) {
+			const emailDuplicado = await Doctor.findOne({ email, _id: { $ne: id } })
+			if (emailDuplicado) {
+				return res.status(400).json({ message: 'El email ya está en uso por otro doctor' })
+			}
+		}
+
+		// Actualizar los datos del doctor (solo campos email, telefono, precioConsulta y disponibilidad)
+		doctorExistente.email = email || doctorExistente.email
 		doctorExistente.disponibilidad = disponibilidad || doctorExistente.disponibilidad
 		doctorExistente.precioConsulta = precioConsulta || doctorExistente.precioConsulta
 		doctorExistente.telefono = telefono || doctorExistente.telefono

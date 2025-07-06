@@ -38,6 +38,9 @@ router.get('/', getDoctores) // Obtener todos los doctores
 router.put(
 	'/:id',
 	param('id').isMongoId().withMessage('El ID debe ser un ID de Mongo válido'),
+	body('email').optional().isEmail().withMessage('El email debe ser válido'),
+	body('telefono').optional().isString().withMessage('El teléfono debe ser una cadena de texto'),
+	body('precioConsulta').optional().isNumeric().withMessage('El precio de la consulta debe ser un número'),
 	handleInputErrors,
 	protegerRuta,
 	autorizarRoles(['admin', 'Doctor']),
