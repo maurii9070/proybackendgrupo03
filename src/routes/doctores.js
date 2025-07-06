@@ -40,7 +40,7 @@ router.put(
 	param('id').isMongoId().withMessage('El ID debe ser un ID de Mongo válido'),
 	handleInputErrors,
 	protegerRuta,
-	autorizarRoles(['admin']),
+	autorizarRoles(['admin', 'Doctor']),
 	actualizarDoctor
 )
 
