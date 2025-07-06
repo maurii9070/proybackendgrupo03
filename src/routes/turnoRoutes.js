@@ -1,10 +1,23 @@
 import express from 'express'
 import turnoController from '../controllers/turnoController.js'
+import { body, param } from 'express-validator'
+import { handleInputErrors } from '../middlewares/validacionInputs.js'
+import { autorizarRoles, protegerRuta } from '../middlewares/authMiddleware.js'
 
 const router = express.Router()
 // Rutas para Turnos
+
 // Crear un turno
-router.post('/paciente/:idPaciente/doctor/:idDoctor', turnoController.createTurno)
+router.post(
+	'/paciente/:idPaciente/doctor/:idDoctor',
+	param('idPaciente').isMongoId().withMessage('ID de paciente inválido'),
+	param('idDoctor').isMongoId().withMessage('ID de doctor inválido'),
+	body('fecha').isString().withMessage('Fecha inválida'),
+	body('hora').isString().withMessage('Hora inválida'),
+	handleInputErrors,
+	turnoController.createTurno
+)
+
 // Obtener turnos por paciente y doctor
 router.get('/paciente/:idPaciente', turnoController.getTurnosByPaciente)
 router.get('/doctor/:idDoctor', turnoController.getTurnosByDoctor)
@@ -21,10 +34,31 @@ router.get('/doctor/:idDoctor/fecha', turnoController.getTurnosByDoctorAndFecha)
 router.get('/estado/pendiente', turnoController.getTurnosPendientes)
 // Actualizar un turno (actualiza solo observaciones)
 router.put('/:idTurno', turnoController.updateTurno)
+
 // Cancelar un turno cambia estado a "cancelado"
-router.put('/:idTurno/cancelado', turnoController.cancelarTurno)
+router.put(
+	'/:idTurno/cancelado',
+	param('idTurno').isMongoId().withMessage('ID de turno inválido'),
+	handleInputErrors,
+	turnoController.cancelarTurno
+)
+
 // Marcar un turno como realizado cambia estado a "realizado"
-router.put('/:idTurno/realizado', turnoController.successTurno)
+router.put(
+	'/:idTurno/realizado',
+	param('idTurno').isMongoId().withMessage('ID de turno inválido'),
+	handleInputErrors,
+	protegerRuta,
+	autorizarRoles('Doctor'),
+	turnoController.successTurno
+)
 // Confirmar un turno cambia estado a "confirmado"
-router.put('/:idTurno/confirmado', turnoController.confirmarTurno)
+router.put(
+	'/:idTurno/confirmado',
+	param('idTurno').isMongoId().withMessage('ID de turno inválido'),
+	handleInputErrors,
+	protegerRuta,
+	autorizarRoles('admin'),
+	turnoController.confirmarTurno
+)
 export default router
