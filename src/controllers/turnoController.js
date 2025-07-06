@@ -72,7 +72,7 @@ const getTurnosByDoctor = async (req, res) => {
 const getTurnoById = async (req, res) => {
 	try {
 		const { idTurno } = req.params
-		const turno = await Turno.findById(idTurno).populate('paciente').populate('doctor')
+		const turno = await Turno.findById(idTurno).populate('paciente').populate('doctor').populate('archivos')
 		if (!turno) {
 			return res.status(404).json({ error: 'Turno no encontrado' })
 		}
@@ -149,7 +149,9 @@ const getTurnosByDoctorAndFecha = async (req, res) => {
 		const turnos = await Turno.find({
 			doctor: idDoctor,
 			fecha,
-			estado: { $in: ['pendiente', 'confirmado'] },
+			estado: {
+				$in: ['pendiente', 'confirmado'],
+			},
 		})
 		res.json(turnos)
 	} catch (error) {

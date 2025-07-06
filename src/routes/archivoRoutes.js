@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { body, param } from 'express-validator'
 import { handleInputErrors } from '../middlewares/validacionInputs.js'
-import { subirArchivo } from '../controllers/archivoController.js'
+import { subirArchivo, eliminarArchivo } from '../controllers/archivoController.js'
 
 const router = Router()
 
@@ -12,6 +12,13 @@ router.post(
 	body('url').notEmpty().withMessage('La URL del archivo es obligatoria'),
 	handleInputErrors,
 	subirArchivo
+)
+
+router.delete(
+	'/:idArchivo',
+	param('idArchivo').isMongoId().withMessage('El ID del archivo debe ser un ObjectId válido'),
+	handleInputErrors,
+	eliminarArchivo
 )
 
 export default router
