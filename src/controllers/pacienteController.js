@@ -114,3 +114,57 @@ export const getPacienteByDni = async (req, res) => {
 		res.status(500).json({ error: 'Error interno del servidor' })
 	}
 }
+export const updatePaciente = async (req, res) => {
+	const { idPaciente } = req.params
+	const {  telefono, email } = req.body
+
+	try {
+		// Validar que el paciente exista
+		const paciente = await Paciente.findById(idPaciente)
+		if (!paciente) {
+			return res.status(404).json({ error: 'Paciente no encontrado' })
+		}
+
+		// Actualizar los campos del paciente
+		paciente.telefono = telefono
+		// Si se proporciona un email, verificar que no esté ya registrado
+		console.log ('Email recibido:', email, 'Paciente email:', paciente.email)
+		if(email != paciente.email) {
+			if (email && email.trim() !== '') {
+			const pacienteConEmail = await Paciente.findOne({ email: email.trim() })
+				if (pacienteConEmail) {
+					return res.status(400).json({ error: 'El email ya está registrado' })
+				}
+			paciente.email = email.trim() // Normalizar el email
+			}
+		}
+		
+
+		await paciente.save()
+		res.status(200).json({ message: 'Paciente actualizado exitosamente', paciente })
+	} catch (error) {
+		console.error('Error al actualizar paciente:', error.message)
+		res.status(500).json({ error: 'Error interno del servidor' })
+	}
+
+}
+export const desvincularGoogle = async (req, res) => {
+	const { idPaciente } = req.params
+
+	try {
+		// Validar que el paciente exista
+		const paciente = await Paciente.findById(idPaciente)
+		if (!paciente) {
+			return res.status(404).json({ error: 'Paciente no encontrado' })
+		}
+
+		// Desvincular Google eliminando el email
+		paciente.uid_firebase = null
+		await paciente.save()
+
+		res.status(200).json({ message: 'Cuenta de Google desvinculada exitosamente', paciente })
+	} catch (error) {
+		console.error('Error al desvincular cuenta de Google:', error.message)
+		res.status(500).json({ error: 'Error interno del servidor' })
+	}
+}

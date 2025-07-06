@@ -1,10 +1,11 @@
 //rutas para el modelo paciente
 import express from 'express'
 const router = express.Router()
-import { registrarPaciente, getPacientes, getPacienteById, getPacienteByDni } from '../controllers/pacienteController.js'
+import { registrarPaciente, getPacientes, getPacienteById, getPacienteByDni, updatePaciente, desvincularGoogle } from '../controllers/pacienteController.js'
 import { protegerRuta, autorizarRoles } from '../middlewares/authMiddleware.js'
-import { body } from 'express-validator'
+import { body,param } from 'express-validator'
 import { handleInputErrors } from '../middlewares/validacionInputs.js'
+
 
 // validaciones comunes para registrar CUALQUIER TIPO DE USUARIO (heredado de Usuario)
 const registrarUsuarioValidaciones = [
@@ -78,4 +79,13 @@ router.get('/dni/:dni', getPacienteByDni)
 // faltan agregar las rutas para actualizar y eliminar pacientes
 router.get('/:idPaciente', getPacienteById)
 
+//actualizar paciente solo telefono y email
+router.put('/:idPaciente',
+	param('idPaciente').isMongoId().withMessage('El ID debe ser un ID de Mongo válido'),
+	body('email').optional().isEmail().withMessage('El email debe ser válido'),
+	body('telefono').isNumeric().withMessage('El teléfono debe ser una cadena de numeros'),
+	handleInputErrors
+	,updatePaciente)
+
+router.put('/desvincular/:idPaciente',desvincularGoogle)
 export default router
