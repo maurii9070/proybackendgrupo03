@@ -223,7 +223,19 @@ const confirmarTurno = async (req, res) => {
 		res.status(500).json({ error: 'Error al confirmar el turno' })
 	}
 }
-
+const getTurnosByEstadoAndPacienteId = async (req,res) => {
+	
+		try {
+			const { idPaciente,estado } = req.params
+			const turnos = await Turno.find({ paciente: idPaciente, estado })
+				.populate('paciente')
+				.populate('doctor')
+			res.json(turnos)
+		} catch (error) {
+			console.error(error)
+			res.status(500).json({ error: `Error al obtener los turnos con estado ${estado}` })
+		}
+}
 export default {
 	createTurno,
 	getTurnosByPaciente,
@@ -236,5 +248,6 @@ export default {
 	getAllTurnos,
 	getTurnosByFecha,
 	getTurnosPendientes,
+	getTurnosByEstadoAndPacienteId,
 	confirmarTurno,
 }

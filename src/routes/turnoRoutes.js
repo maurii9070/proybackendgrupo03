@@ -19,6 +19,8 @@ router.get('/:idTurno', turnoController.getTurnoById)
 router.get('/doctor/:idDoctor/fecha', turnoController.getTurnosByDoctorAndFecha)
 // Obtener turnos por estado pendiente
 router.get('/estado/pendiente', turnoController.getTurnosPendientes)
+// Obtener turnos por estado :estado
+router.get('/estado/:estado/paciente/:idPaciente',turnoController.getTurnosByEstadoAndPacienteId)
 // Actualizar un turno (actualiza solo observaciones)
 router.put('/:idTurno', turnoController.updateTurno)
 // Cancelar un turno cambia estado a "cancelado"
