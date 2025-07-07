@@ -3,8 +3,6 @@ import Doctor from '../models/Doctor.js' // Importamos el modelo Doctor
 import Pago from '../models/Pago.js'
 import Turno from '../models/Turno.js' // Importamos el modelo Turno
 const client = new MercadoPagoConfig({
-	//accessToken: 'APP_USR-3831322869194403-062616-3cfb47a234c46324ffaf5e51c6395076-256484141' //acces token de rosio
-	//accessToken: 'APP_USR-2366408993859862-061818-bf28d279bcb4447922f1f01d30b90235-48718684', //acces token de maurisio
 	accessToken: process.env.MP_ACCESS_TOKEN, //acces token de maurisio
 })
 const paymentClient = new Payment(client) // Para consultar pagos
