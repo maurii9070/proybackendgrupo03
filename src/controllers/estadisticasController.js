@@ -431,6 +431,343 @@ const getIngresosPorEspecialidad = async (req, res) => {
 	}
 }
 
+// Estadística 7: Turnos por día de la semana
+const getTurnosPorDiaSemana = async (req, res) => {
+	try {
+		const stats = await Turno.aggregate([
+			{
+				$addFields: {
+					fechaArray: { $split: ['$fecha', '/'] },
+				},
+			},
+			{
+				$addFields: {
+					dia: { $toInt: { $arrayElemAt: ['$fechaArray', 0] } },
+					mes: { $toInt: { $arrayElemAt: ['$fechaArray', 1] } },
+					anio: { $toInt: { $arrayElemAt: ['$fechaArray', 2] } },
+				},
+			},
+			{
+				$addFields: {
+					fechaCompleta: {
+						$dateFromParts: {
+							year: '$anio',
+							month: '$mes',
+							day: '$dia',
+						},
+					},
+				},
+			},
+			{
+				$addFields: {
+					diaSemana: { $dayOfWeek: '$fechaCompleta' }, // 1=Domingo, 2=Lunes, etc.
+				},
+			},
+			{
+				$group: {
+					_id: '$diaSemana',
+					totalTurnos: { $sum: 1 },
+					turnosRealizados: {
+						$sum: { $cond: [{ $eq: ['$estado', 'realizado'] }, 1, 0] },
+					},
+					turnosPendientes: {
+						$sum: { $cond: [{ $eq: ['$estado', 'pendiente'] }, 1, 0] },
+					},
+					turnosCancelados: {
+						$sum: { $cond: [{ $eq: ['$estado', 'cancelado'] }, 1, 0] },
+					},
+				},
+			},
+			{
+				$sort: { _id: 1 },
+			},
+		])
+
+		const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+
+		// Asegurar que todos los días estén representados
+		const statsCompletos = diasSemana.map((dia, index) => {
+			const stat = stats.find(s => s._id === index + 1)
+			return (
+				stat || {
+					_id: index + 1,
+					totalTurnos: 0,
+					turnosRealizados: 0,
+					turnosPendientes: 0,
+					turnosCancelados: 0,
+				}
+			)
+		})
+
+		const chartData = {
+			labels: diasSemana,
+			datasets: [
+				{
+					label: 'Total Turnos',
+					data: statsCompletos.map(item => item.totalTurnos),
+					backgroundColor: '#36A2EB',
+					borderColor: '#36A2EB',
+					borderWidth: 1,
+				},
+				{
+					label: 'Turnos Realizados',
+					data: statsCompletos.map(item => item.turnosRealizados),
+					backgroundColor: '#4BC0C0',
+					borderColor: '#4BC0C0',
+					borderWidth: 1,
+				},
+				{
+					label: 'Turnos Pendientes',
+					data: statsCompletos.map(item => item.turnosPendientes),
+					backgroundColor: '#FF9F40',
+					borderColor: '#FF9F40',
+					borderWidth: 1,
+				},
+			],
+		}
+
+		res.json({
+			raw: statsCompletos,
+			chartData,
+		})
+	} catch (error) {
+		console.error('Error en getTurnosPorDiaSemana:', error)
+		res.status(500).json({ error: 'Error al obtener turnos por día de semana' })
+	}
+}
+
+// Estadística 8: Ingresos por mes
+const getIngresosPorMes = async (req, res) => {
+	try {
+		const stats = await Turno.aggregate([
+			{
+				$match: { estado: 'realizado' }, // Solo turnos realizados generan ingresos
+			},
+			{
+				$lookup: {
+					from: 'usuarios',
+					localField: 'doctor',
+					foreignField: '_id',
+					as: 'doctorInfo',
+				},
+			},
+			{
+				$unwind: '$doctorInfo',
+			},
+			{
+				$match: {
+					'doctorInfo._rol': 'Doctor',
+				},
+			},
+			{
+				$addFields: {
+					fechaArray: { $split: ['$fecha', '/'] },
+				},
+			},
+			{
+				$addFields: {
+					mes: { $toInt: { $arrayElemAt: ['$fechaArray', 1] } },
+					anio: { $toInt: { $arrayElemAt: ['$fechaArray', 2] } },
+				},
+			},
+			{
+				$group: {
+					_id: { mes: '$mes', anio: '$anio' },
+					ingresoTotal: { $sum: '$doctorInfo.precioConsulta' },
+					cantidadTurnos: { $sum: 1 },
+					ingresoPromedio: { $avg: '$doctorInfo.precioConsulta' },
+				},
+			},
+			{
+				$sort: { '_id.anio': 1, '_id.mes': 1 },
+			},
+		])
+
+		const meses = [
+			'Enero',
+			'Febrero',
+			'Marzo',
+			'Abril',
+			'Mayo',
+			'Junio',
+			'Julio',
+			'Agosto',
+			'Septiembre',
+			'Octubre',
+			'Noviembre',
+			'Diciembre',
+		]
+
+		const chartData = {
+			labels: stats.map(item => `${meses[item._id.mes - 1]} ${item._id.anio}`),
+			datasets: [
+				{
+					label: 'Ingresos ($)',
+					data: stats.map(item => item.ingresoTotal),
+					borderColor: '#9966FF',
+					backgroundColor: 'rgba(153, 102, 255, 0.2)',
+					fill: true,
+					tension: 0.4,
+				},
+				{
+					label: 'Cantidad de Turnos',
+					data: stats.map(item => item.cantidadTurnos),
+					borderColor: '#FF9F40',
+					backgroundColor: 'rgba(255, 159, 64, 0.2)',
+					fill: false,
+					yAxisID: 'y1',
+				},
+			],
+		}
+
+		// Configuración para doble eje Y
+		const chartOptions = {
+			scales: {
+				y: {
+					type: 'linear',
+					display: true,
+					position: 'left',
+					title: {
+						display: true,
+						text: 'Ingresos ($)',
+					},
+				},
+				y1: {
+					type: 'linear',
+					display: true,
+					position: 'right',
+					title: {
+						display: true,
+						text: 'Cantidad de Turnos',
+					},
+					grid: {
+						drawOnChartArea: false,
+					},
+				},
+			},
+		}
+
+		res.json({
+			raw: stats,
+			chartData,
+			chartOptions,
+		})
+	} catch (error) {
+		console.error('Error en getIngresosPorMes:', error)
+		res.status(500).json({ error: 'Error al obtener ingresos por mes' })
+	}
+}
+
+// Estadística 9: Top doctores más solicitados
+const getTopDoctoresSolicitados = async (req, res) => {
+	try {
+		const stats = await Turno.aggregate([
+			{
+				$lookup: {
+					from: 'usuarios',
+					localField: 'doctor',
+					foreignField: '_id',
+					as: 'doctorInfo',
+				},
+			},
+			{
+				$unwind: '$doctorInfo',
+			},
+			{
+				$match: {
+					'doctorInfo._rol': 'Doctor',
+				},
+			},
+			{
+				$lookup: {
+					from: 'especialidads',
+					localField: 'doctorInfo.especialidad',
+					foreignField: '_id',
+					as: 'especialidadInfo',
+				},
+			},
+			{
+				$unwind: '$especialidadInfo',
+			},
+			{
+				$group: {
+					_id: '$doctor',
+					doctorNombre: {
+						$first: { $concat: ['$doctorInfo.nombre', ' ', '$doctorInfo.apellido'] },
+					},
+					especialidad: { $first: '$especialidadInfo.nombre' },
+					matricula: { $first: '$doctorInfo.matricula' },
+					totalTurnos: { $sum: 1 },
+					turnosRealizados: {
+						$sum: { $cond: [{ $eq: ['$estado', 'realizado'] }, 1, 0] },
+					},
+					turnosPendientes: {
+						$sum: { $cond: [{ $eq: ['$estado', 'pendiente'] }, 1, 0] },
+					},
+					turnosCancelados: {
+						$sum: { $cond: [{ $eq: ['$estado', 'cancelado'] }, 1, 0] },
+					},
+					ingresoTotal: {
+						$sum: { $cond: [{ $eq: ['$estado', 'realizado'] }, '$doctorInfo.precioConsulta', 0] },
+					},
+				},
+			},
+			{
+				$addFields: {
+					tasaEfectividad: {
+						$cond: [
+							{ $gt: ['$totalTurnos', 0] },
+							{ $multiply: [{ $divide: ['$turnosRealizados', '$totalTurnos'] }, 100] },
+							0,
+						],
+					},
+				},
+			},
+			{
+				$sort: { totalTurnos: -1 },
+			},
+			{
+				$limit: 10, // Top 10 doctores más solicitados
+			},
+		])
+
+		const chartData = {
+			labels: stats.map(item => `Dr. ${item.doctorNombre}`),
+			datasets: [
+				{
+					label: 'Turnos Solicitados',
+					data: stats.map(item => item.totalTurnos),
+					backgroundColor: '#FF9F40',
+					borderColor: '#FF9F40',
+					borderWidth: 1,
+				},
+				{
+					label: 'Turnos Realizados',
+					data: stats.map(item => item.turnosRealizados),
+					backgroundColor: '#4BC0C0',
+					borderColor: '#4BC0C0',
+					borderWidth: 1,
+				},
+				{
+					label: 'Turnos Cancelados',
+					data: stats.map(item => item.turnosCancelados),
+					backgroundColor: '#FF6384',
+					borderColor: '#FF6384',
+					borderWidth: 1,
+				},
+			],
+		}
+
+		res.json({
+			raw: stats,
+			chartData,
+		})
+	} catch (error) {
+		console.error('Error en getTopDoctoresSolicitados:', error)
+		res.status(500).json({ error: 'Error al obtener top doctores solicitados' })
+	}
+}
+
 // Endpoint de resumen - obtiene todas las estadísticas principales en una sola llamada
 const getResumenEstadisticas = async (req, res) => {
 	try {
@@ -440,7 +777,7 @@ const getResumenEstadisticas = async (req, res) => {
 		const turnosRealizados = await Turno.countDocuments({ estado: 'realizado' })
 		const turnosCancelados = await Turno.countDocuments({ estado: 'cancelado' })
 
-		const totalDoctores = await Usuario.countDocuments({ rol: 'doctor' })
+		const totalDoctores = await Usuario.countDocuments({ _rol: 'Doctor' })
 		const totalEspecialidades = await Especialidad.countDocuments()
 
 		// Top 5 especialidades
@@ -458,7 +795,7 @@ const getResumenEstadisticas = async (req, res) => {
 			},
 			{
 				$match: {
-					'doctorInfo.rol': 'doctor',
+					'doctorInfo._rol': 'Doctor',
 				},
 			},
 			{
@@ -531,4 +868,7 @@ export {
 	getEstadosTurnos,
 	getIngresosPorEspecialidad,
 	getResumenEstadisticas,
+	getTurnosPorDiaSemana,
+	getIngresosPorMes,
+	getTopDoctoresSolicitados,
 }
