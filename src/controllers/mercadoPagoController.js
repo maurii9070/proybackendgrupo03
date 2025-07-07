@@ -26,7 +26,7 @@ const createPreference = async (req, res) => {
 				},
 			],
 			back_urls: {
-				success: `${process.env.URL_FRONTEND_DEPLOY}/${turno.paciente}`, // deber ser https para que funcione, debemos desplegar el frontend
+				success: `${process.env.URL_FRONTEND_DEPLOY}/paciente/${turno.paciente}`, // deber ser https para que funcione, debemos desplegar el frontend
 				failure: `${process.env.URL_FRONTEND_DEPLOY}`,
 				pending: `${process.env.URL_FRONTEND_DEPLOY}`,
 			},
