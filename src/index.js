@@ -32,7 +32,9 @@ app.use(express.json())
 app.use(morgan('dev'))
 
 //ruta de swagger
-swaggerDocs(app)
+if(process.argv[2] === '--api'){
+	swaggerDocs(app)
+}
 //rutas de la API
 
 app.use('/api/mercadoPago',cors(corsWebhookConfig), mercadoPagoRoutes)
@@ -52,5 +54,8 @@ const port = process.env.PORT || 4000
 
 app.listen(port, () => {
 	console.log(colors.cyan.bold(`Servidor corriendo en el puerto: ${port}`))
-	console.log('Documentación Swagger en http://localhost:4000/api-docs')
+	if(process.argv[2] === '--api'){
+		console.log('Documentación Swagger en http://localhost:4000/api-docs')
+		console.log('Documentación de referencia en http://localhost:4000/reference')
+	}
 })
