@@ -1,6 +1,6 @@
 export const corsConfig = {
 	origin: function (origin, callback) {
-		const whiteList = [process.env.FRONTEND_URL,'https://www.mercadopago.com.ar','https://sandbox.mercadopago.com.ar'
+		const whiteList = [process.env.FRONTEND_URL,'https://www.mercadopago.com.ar','https://sandbox.mercadopago.com.ar', process.env.DOC_URL
 			
 		]
 

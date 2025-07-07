@@ -6,34 +6,40 @@ const options = {
 	definition: {
 		openapi: '3.0.0',
 		info: {
-			title: 'API Documentation',
+			title: 'API Consultorios - Documentación',
 			version: '1.0.0',
-			description: 'Documentación de mi API',
+			description:
+				'API para el sistema de gestión de consultorios médicos. Incluye funcionalidades para pacientes, doctores, turnos y administración.',
 		},
 		servers: [
 			//se puede agregar el servidor desplegado en producción
 			{
-				url: 'http://localhost:4000', // Cambia esto según tu entorno
+				url: process.env.DOC_URL || 'http://localhost:4000', // Cambia esto según tu entorno
 				description: 'Servidor local',
 			},
 		],
-		//PARA AGREGAR AUTENTICACIÓN CON JWT
-		// components: {
-		//     securitySchemes: {
-		//         bearerAuth: {
-		//             type: 'http',
-		//             scheme: 'bearer',
-		//             bearerFormat: 'JWT',
-		//         },
-		//     },
-		// },
-		// security: [
-		//     {
-		//         bearerAuth: [],
-		//     },
-		// ],
+		// Configuración de autenticación JWT
+		components: {
+			securitySchemes: {
+				bearerAuth: {
+					type: 'http',
+					scheme: 'bearer',
+					bearerFormat: 'JWT',
+					description: 'Ingresa el token JWT en el formato: Bearer {token}',
+				},
+			},
+		},
+		security: [
+			{
+				bearerAuth: [],
+			},
+		],
 	},
-	apis: ['src/routes/*.js'], // Ruta a tus archivos de rutas
+	// Incluir tanto archivos de rutas (para comentarios inline) como archivos YAML de documentación
+	apis: [
+		'src/routes/*.js', // Rutas existentes (por si tienes algunos comentarios inline)
+		'src/docs/*.yaml', // Archivos YAML de documentación separada
+	],
 }
 
 const swaggerSpec = swaggerJsdoc(options)
