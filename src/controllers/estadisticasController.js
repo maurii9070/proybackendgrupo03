@@ -4,10 +4,78 @@ import Usuario from '../models/Usuario.js'
 import Especialidad from '../models/Especialidad.js'
 import mongoose from 'mongoose'
 
+const getRangeWindow = (range = 'month') => {
+	const now = new Date()
+	const since = new Date(now)
+
+	if (range === 'week') {
+		since.setDate(now.getDate() - 7)
+		return { since, now }
+	}
+
+	if (range === '6m') {
+		since.setMonth(now.getMonth() - 6)
+		return { since, now }
+	}
+
+	if (range === 'month') {
+		since.setDate(now.getDate() - 30)
+		return { since, now }
+	}
+
+	return { since: null, now }
+}
+
+const buildTurnoDateStages = (range = 'month') => {
+	const { since, now } = getRangeWindow(range)
+	if (!since) return []
+
+	return [
+		{
+			$addFields: {
+				fechaArray: { $split: ['$fecha', '/'] },
+			},
+		},
+		{
+			$addFields: {
+				fechaDate: {
+					$dateFromString: {
+						dateString: {
+							$concat: [
+								{ $arrayElemAt: ['$fechaArray', 2] },
+								'-',
+								{ $arrayElemAt: ['$fechaArray', 1] },
+								'-',
+								{ $arrayElemAt: ['$fechaArray', 0] },
+							],
+						},
+						format: '%Y-%m-%d',
+					},
+				},
+			},
+		},
+		{
+			$match: {
+				fechaDate: {
+					$gte: since,
+					$lte: now,
+				},
+			},
+		},
+	]
+}
+
+const getStatsRange = req => {
+	const validRanges = new Set(['all', 'week', 'month', '6m'])
+	return validRanges.has(req.query.range) ? req.query.range : 'month'
+}
+
 // Estadística 1: Turnos por especialidad
 const getTurnosPorEspecialidad = async (req, res) => {
 	try {
+		const range = getStatsRange(req)
 		const stats = await Turno.aggregate([
+			...buildTurnoDateStages(range),
 			{
 				$lookup: {
 					from: 'usuarios', // Cambiado de 'doctors' a 'usuarios'
@@ -90,7 +158,9 @@ const getTurnosPorEspecialidad = async (req, res) => {
 // Estadística 2: Horarios más solicitados
 const getHorariosMasSolicitados = async (req, res) => {
 	try {
+		const range = getStatsRange(req)
 		const stats = await Turno.aggregate([
+			...buildTurnoDateStages(range),
 			{
 				$group: {
 					_id: '$hora',
@@ -145,7 +215,9 @@ const getHorariosMasSolicitados = async (req, res) => {
 // Estadística 3: Turnos por doctor
 const getTurnosPorDoctor = async (req, res) => {
 	try {
+		const range = getStatsRange(req)
 		const stats = await Turno.aggregate([
+			...buildTurnoDateStages(range),
 			{
 				$lookup: {
 					from: 'usuarios', // Cambiado de 'doctors' a 'usuarios'
@@ -228,16 +300,13 @@ const getTurnosPorDoctor = async (req, res) => {
 // Estadística 4: Turnos por mes (últimos 12 meses)
 const getTurnosPorMes = async (req, res) => {
 	try {
+		const range = getStatsRange(req)
 		const stats = await Turno.aggregate([
+			...buildTurnoDateStages(range),
 			{
 				$addFields: {
-					fechaArray: { $split: ['$fecha', '/'] },
-				},
-			},
-			{
-				$addFields: {
-					mes: { $toInt: { $arrayElemAt: ['$fechaArray', 1] } },
-					anio: { $toInt: { $arrayElemAt: ['$fechaArray', 2] } },
+					mes: { $month: '$fechaDate' },
+					anio: { $year: '$fechaDate' },
 				},
 			},
 			{
@@ -310,7 +379,9 @@ const getTurnosPorMes = async (req, res) => {
 // Estadística 5: Estados de turnos (resumen general)
 const getEstadosTurnos = async (req, res) => {
 	try {
+		const range = getStatsRange(req)
 		const stats = await Turno.aggregate([
+			...buildTurnoDateStages(range),
 			{
 				$group: {
 					_id: '$estado',
@@ -362,7 +433,9 @@ const getEstadosTurnos = async (req, res) => {
 // Estadística 6: Ingresos por especialidad (si tienes precios)
 const getIngresosPorEspecialidad = async (req, res) => {
 	try {
+		const range = getStatsRange(req)
 		const stats = await Turno.aggregate([
+			...buildTurnoDateStages(range),
 			{
 				$match: { estado: 'realizado' }, // Solo turnos realizados generan ingresos
 			},
@@ -434,33 +507,12 @@ const getIngresosPorEspecialidad = async (req, res) => {
 // Estadística 7: Turnos por día de la semana
 const getTurnosPorDiaSemana = async (req, res) => {
 	try {
+		const range = getStatsRange(req)
 		const stats = await Turno.aggregate([
+			...buildTurnoDateStages(range),
 			{
 				$addFields: {
-					fechaArray: { $split: ['$fecha', '/'] },
-				},
-			},
-			{
-				$addFields: {
-					dia: { $toInt: { $arrayElemAt: ['$fechaArray', 0] } },
-					mes: { $toInt: { $arrayElemAt: ['$fechaArray', 1] } },
-					anio: { $toInt: { $arrayElemAt: ['$fechaArray', 2] } },
-				},
-			},
-			{
-				$addFields: {
-					fechaCompleta: {
-						$dateFromParts: {
-							year: '$anio',
-							month: '$mes',
-							day: '$dia',
-						},
-					},
-				},
-			},
-			{
-				$addFields: {
-					diaSemana: { $dayOfWeek: '$fechaCompleta' }, // 1=Domingo, 2=Lunes, etc.
+					diaSemana: { $dayOfWeek: '$fechaDate' }, // 1=Domingo, 2=Lunes, etc.
 				},
 			},
 			{
@@ -539,7 +591,9 @@ const getTurnosPorDiaSemana = async (req, res) => {
 // Estadística 8: Ingresos por mes
 const getIngresosPorMes = async (req, res) => {
 	try {
+		const range = getStatsRange(req)
 		const stats = await Turno.aggregate([
+			...buildTurnoDateStages(range),
 			{
 				$match: { estado: 'realizado' }, // Solo turnos realizados generan ingresos
 			},
@@ -561,13 +615,8 @@ const getIngresosPorMes = async (req, res) => {
 			},
 			{
 				$addFields: {
-					fechaArray: { $split: ['$fecha', '/'] },
-				},
-			},
-			{
-				$addFields: {
-					mes: { $toInt: { $arrayElemAt: ['$fechaArray', 1] } },
-					anio: { $toInt: { $arrayElemAt: ['$fechaArray', 2] } },
+					mes: { $month: '$fechaDate' },
+					anio: { $year: '$fechaDate' },
 				},
 			},
 			{
@@ -661,7 +710,9 @@ const getIngresosPorMes = async (req, res) => {
 // Estadística 9: Top doctores más solicitados
 const getTopDoctoresSolicitados = async (req, res) => {
 	try {
+		const range = getStatsRange(req)
 		const stats = await Turno.aggregate([
+			...buildTurnoDateStages(range),
 			{
 				$lookup: {
 					from: 'usuarios',
@@ -771,17 +822,44 @@ const getTopDoctoresSolicitados = async (req, res) => {
 // Endpoint de resumen - obtiene todas las estadísticas principales en una sola llamada
 const getResumenEstadisticas = async (req, res) => {
 	try {
-		// Estadísticas básicas
-		const totalTurnos = await Turno.countDocuments()
-		const turnosPendientes = await Turno.countDocuments({ estado: 'pendiente' })
-		const turnosRealizados = await Turno.countDocuments({ estado: 'realizado' })
-		const turnosCancelados = await Turno.countDocuments({ estado: 'cancelado' })
+		const range = getStatsRange(req)
+		const resumenTurnos = await Turno.aggregate([
+			...buildTurnoDateStages(range),
+			{
+				$group: {
+					_id: null,
+					totalTurnos: { $sum: 1 },
+					turnosPendientes: {
+						$sum: { $cond: [{ $eq: ['$estado', 'pendiente'] }, 1, 0] },
+					},
+					turnosRealizados: {
+						$sum: { $cond: [{ $eq: ['$estado', 'realizado'] }, 1, 0] },
+					},
+					turnosCancelados: {
+						$sum: { $cond: [{ $eq: ['$estado', 'cancelado'] }, 1, 0] },
+					},
+				},
+			},
+		])
+
+		const basicStats = resumenTurnos[0] || {
+			totalTurnos: 0,
+			turnosPendientes: 0,
+			turnosRealizados: 0,
+			turnosCancelados: 0,
+		}
+
+		const totalTurnos = basicStats.totalTurnos
+		const turnosPendientes = basicStats.turnosPendientes
+		const turnosRealizados = basicStats.turnosRealizados
+		const turnosCancelados = basicStats.turnosCancelados
 
 		const totalDoctores = await Usuario.countDocuments({ _rol: 'Doctor' })
 		const totalEspecialidades = await Especialidad.countDocuments()
 
 		// Top 5 especialidades
 		const topEspecialidades = await Turno.aggregate([
+			...buildTurnoDateStages(range),
 			{
 				$lookup: {
 					from: 'usuarios',
@@ -825,6 +903,7 @@ const getResumenEstadisticas = async (req, res) => {
 
 		// Top 5 horarios
 		const topHorarios = await Turno.aggregate([
+			...buildTurnoDateStages(range),
 			{
 				$group: {
 					_id: '$hora',

@@ -45,6 +45,7 @@ const getTurnosByPaciente = async (req, res) => {
 				},
 			})
 			.populate('paciente')
+			.populate('archivos')
 		turnos.reverse()
 		res.json(turnos)
 	} catch (error) {
@@ -73,7 +74,15 @@ const getTurnosByDoctor = async (req, res) => {
 const getTurnoById = async (req, res) => {
 	try {
 		const { idTurno } = req.params
-		const turno = await Turno.findById(idTurno).populate('paciente').populate('doctor').populate('archivos')
+		const turno = await Turno.findById(idTurno)
+			.populate('paciente')
+			.populate({
+				path: 'doctor',
+				populate: {
+					path: 'especialidad',
+				},
+			})
+			.populate('archivos')
 		if (!turno) {
 			return res.status(404).json({ error: 'Turno no encontrado' })
 		}

@@ -25,8 +25,6 @@ router.get('/doctor/:idDoctor', turnoController.getTurnosByDoctor)
 router.get('/', turnoController.getAllTurnos)
 // Obtener turnos fecha
 router.get('/fecha', turnoController.getTurnosByFecha)
-// Obtener un turno por ID
-router.get('/:idTurno', turnoController.getTurnoById)
 
 // Obtener todos los turnos de un doctor por fecha
 router.get('/doctor/:idDoctor/fecha', turnoController.getTurnosByDoctorAndFecha)
@@ -34,6 +32,8 @@ router.get('/doctor/:idDoctor/fecha', turnoController.getTurnosByDoctorAndFecha)
 router.get('/estado/pendiente', turnoController.getTurnosPendientes)
 // Obtener turnos por estado :estado
 router.get('/estado/:estado/paciente/:idPaciente',turnoController.getTurnosByEstadoAndPacienteId)
+// Obtener un turno por ID
+router.get('/:idTurno', turnoController.getTurnoById)
 // Actualizar un turno (actualiza solo observaciones)
 router.put('/:idTurno', turnoController.updateTurno)
 
